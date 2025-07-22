@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 200 200"
+   stroke="#000000"
+   fill="none"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="stss.svg"
+   width="200"
+   height="200"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showguides="false"
+     inkscape:zoom="2.6033333"
+     inkscape:cx="79.321383"
+     inkscape:cy="110.05122"
+     inkscape:window-width="1600"
+     inkscape:window-height="872"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <!-- Stroke #1 -->
+  <path
+     d="M 69.999997,189.50594 A 29.453274,29.835311 0 0 1 40.546723,159.67063 M 69.999997,10.494061 a 29.453274,29.835311 0 0 0 -29.453274,29.83532 m 0,74.588279 v 0 L 11.093452,100 40.546723,85.082352 m 0,74.588278 v 0 -44.75297 m 0,-74.588279 v 0 44.752971"
+     id="path1-6"
+     inkscape:label="leftBrace"
+     style="stroke-width:3;stroke:#ffffff;stroke-opacity:1;stroke-dasharray:none;stroke-linecap:round;stroke-linejoin:round" />
+  <path
+     d="m 130,10.494062 a 29.453382,29.835311 0 0 1 29.45338,29.835312 M 130,189.50594 a 29.453382,29.835311 0 0 0 29.45338,-29.83532 m 0,-74.588278 v 0 l 29.45338,14.917668 -29.45338,14.91764 m 0,-74.588276 v 0 44.752968 m 0,74.588278 v 0 -44.75297"
+     id="path1-6-5"
+     inkscape:label="rightBrace"
+     style="stroke-width:3;stroke-dasharray:none;stroke:#ffffff;stroke-opacity:1;stroke-linecap:round;stroke-linejoin:round" />
+  <!-- Stroke #2 -->
+  <!-- Stroke #3 -->
+  <path
+     d="m 73.150418,149.71305 v 0 L 134.02426,87.571732 h -24.34954 l 12.17477,-37.2848 -60.873839,62.141328 h 24.349535 l -12.174768,37.28479"
+     id="path3"
+     inkscape:label="ico"
+     style="stroke-width:3;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-opacity:1;stroke-dasharray:none;stroke-linecap:round;stroke-linejoin:round" />
+</svg>
