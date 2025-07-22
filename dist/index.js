@@ -5,34 +5,88 @@ const bakedstorage = {
     version: 0.1,
     releasetype: 'alpha'
 };
+const check = {
+    vendor: (vendor, throwErr = false) => {
+        if (runtimestorage.vendors[vendor]) {
+            return true;
+        }
+        else {
+            if (throwErr) {
+                throw new Error(`Vendor with name ${vendor} does not exist`);
+            }
+            else {
+                return false;
+            }
+        }
+    },
+    path: (fpath, throwErr = false) => {
+        const [vendor, ipath] = fpath.split(':');
+        const path = ipath.split('/');
+        if (check.vendor(vendor, false)) {
+            // check if runtimestorage.vendors{path}.type exists
+            let cdir = runtimestorage.vendors[vendor];
+            for (const ndir of path) {
+                const next = cdir[ndir];
+                if (!next || "type" in next) {
+                    if (throwErr) {
+                        throw new Error(`Directory ${ndir} does not exist in ${vendor}:${cdir}/`);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                cdir = next;
+            }
+            return true;
+        }
+        else {
+            if (throwErr) {
+                throw new Error(`Vendor with name ${vendor} does not exist`);
+            }
+            else {
+                return false;
+            }
+        }
+    }
+};
 const register = {
     vendor: (vendor) => {
-        if (runtimestorage.vendors[vendor]) {
+        if (check.vendor(vendor)) {
             throw new Error(`Vendor with name ${vendor} already exists`);
         }
-        runtimestorage.vendors[vendor] = { dirs: {} };
+        runtimestorage.vendors[vendor] = {};
+        return true;
     },
     directory: (fpath) => {
+        const [vendor, ipath] = fpath.split(':');
+        check.vendor(vendor, true);
+        const path = ipath.split('/');
+        let cdir = runtimestorage.vendors[vendor];
+        for (const ndir of path) {
+            if (!cdir[ndir]) {
+                cdir[ndir] = {};
+            }
+            cdir = cdir[ndir];
+        }
+        return true;
+    },
+    method: (fpath, data) => {
         const [vendor, path] = fpath.split(':');
         if (!runtimestorage.vendors[vendor]) {
             throw new Error(`Vendor with name ${vendor} does not exist`);
         }
         const parts = path.split('/');
-        let currentDir = runtimestorage.vendors[vendor];
-        for (const part of parts) {
-            if (!currentDir[part]) {
-                currentDir[part] = {};
-            }
-            currentDir = currentDir[part];
+    },
+    component: (fpath, data) => {
+        const [vendor, path] = fpath.split(':');
+        if (!runtimestorage.vendors[vendor]) {
+            throw new Error(`Vendor with name ${vendor} does not exist`);
         }
-    },
-    method: (path, data) => {
-    },
-    component: (path, data) => {
+        const parts = path.split('/');
     },
 };
 const access = {
-    method: (fpath) => {
+    method: (fpath, args) => {
     },
     component: (fpath) => {
     }
@@ -42,6 +96,7 @@ window.sintasq_initializer = () => {
         dev: {
             storage: runtimestorage,
         },
+        check,
         register,
         access
     };
