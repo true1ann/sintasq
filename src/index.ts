@@ -1,11 +1,4 @@
-type StorageFile = {
-    type: string
-    data: any
-}
-
-type Directory = {
-    [key: string]: StorageFile | Directory
-}
+import type { StorageFile, Directory } from './types'
 
 let runtimestorage = {
     vendors: {} as { 
@@ -16,6 +9,59 @@ let runtimestorage = {
 const bakedstorage = {
     version: 0.1,
     releasetype: 'alpha'
+}
+
+function internal_isDirectory(obj: any): obj is Directory {
+	return obj && typeof obj === 'object' && !('type' in obj)
+}
+
+function internal_parsepath ( fpath: string, should_autocheck: boolean = false): [ string, { string: string; arr: string[]; link: Directory | StorageFile | undefined }, { vendorReplaced: boolean; pathChecked: boolean; pathCheckSucceeded: boolean } ] {
+	const split = fpath.split(':')
+	let vendor = ''
+	let rawPath = ''
+	let vendorReplaced = false
+	let pathChecked = false
+	let pathCheckSucceeded = false
+
+	if (split.length === 1) {
+		vendor = 'sintasq'
+		rawPath = split[0]
+		vendorReplaced = true
+		should_autocheck = true
+	} else {
+		vendor = split[0]
+		rawPath = split.slice(1).join(':')
+	}
+
+	const pathArr = rawPath.split('/')
+
+	let link: Directory | StorageFile | undefined = runtimestorage.vendors?.[vendor]
+	for (const segment of pathArr) {
+		if (!link || typeof link !== 'object' || 'type' in link) {
+			link = undefined
+			break
+		}
+		link = (link as Directory)[segment]
+	}
+
+	if (should_autocheck) {
+		pathChecked = true
+		pathCheckSucceeded = check.path(fpath)
+	}
+
+	return [
+		vendor,
+		{
+			string: rawPath,
+			arr: pathArr,
+			link
+		},
+		{
+			vendorReplaced,
+			pathChecked,
+			pathCheckSucceeded
+		}
+	]
 }
 
 const check = {
@@ -31,10 +77,19 @@ const check = {
         }
     },
     path: (fpath: string, throwErr: boolean = false) => {
-        const [vendor, ipath] = fpath.split(':')
+        const split = fpath.split(':')
+        let vendor = ''
+        let ipath = ''
+
+        if (split.length === 1) {
+            vendor = 'sintasq'
+            ipath = split[0]
+        } else {
+            vendor = split[0]
+            ipath = split.slice(1).join(':')
+        }
         const path = ipath.split('/')
         if (check.vendor(vendor, false)) {
-            // check if runtimestorage.vendors{path}.type exists
             let cdir = runtimestorage.vendors[vendor]
 
             for (const ndir of path) {
@@ -82,22 +137,22 @@ const register = {
         return true
     },
     method: (fpath: string, data: { name: string; params: any[]; method: Function; }) => { // { method: 'vendor:path/method', args: ['arg1', 'works the same as in functions'] }
-        const [vendor, path] = fpath.split(':')
-        
-        if (!runtimestorage.vendors[vendor]) {
-            throw new Error(`Vendor with name ${vendor} does not exist`)
+        const [vendor, pathObj] = internal_parsepath(fpath, true)
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`)
         }
-
-        const parts = path.split('/')
+        if (!internal_isDirectory(pathObj.link)) {
+            throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`)
+        }
     },
     component: (fpath: string, data: { name: string, componentdata: any; }) => { // <st-c id="vendor:path/component" arg1="works the same as in html">really</st-c>
-        const [vendor, path] = fpath.split(':')
-        
-        if (!runtimestorage.vendors[vendor]) {
-            throw new Error(`Vendor with name ${vendor} does not exist`)
+        const [vendor, pathObj] = internal_parsepath(fpath, true)
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`)
         }
-
-        const parts = path.split('/')
+        if (!internal_isDirectory(pathObj.link)) {
+            throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`)
+        }
     },
 }
 
@@ -122,6 +177,7 @@ window.sintasq_initializer = () => {
     return {
         dev: {
             storage: runtimestorage,
+            parsepath: internal_parsepath
         },
         check,
         register,

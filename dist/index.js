@@ -5,6 +5,51 @@ const bakedstorage = {
     version: 0.1,
     releasetype: 'alpha'
 };
+function internal_parsepath(fpath, should_autocheck = false) {
+    var _a;
+    const split = fpath.split(':');
+    let vendor = '';
+    let rawPath = '';
+    let vendorReplaced = false;
+    let pathChecked = false;
+    let pathCheckSucceeded = false;
+    if (split.length === 1) {
+        vendor = 'sintasq';
+        rawPath = split[0];
+        vendorReplaced = true;
+        should_autocheck = true;
+    }
+    else {
+        vendor = split[0];
+        rawPath = split.slice(1).join(':');
+    }
+    const pathArr = rawPath.split('/');
+    let link = (_a = runtimestorage.vendors) === null || _a === void 0 ? void 0 : _a[vendor];
+    for (const segment of pathArr) {
+        if (!link || typeof link !== 'object' || 'type' in link) {
+            link = undefined;
+            break;
+        }
+        link = link[segment];
+    }
+    if (should_autocheck) {
+        pathChecked = true;
+        pathCheckSucceeded = check.path(fpath);
+    }
+    return [
+        vendor,
+        {
+            string: rawPath,
+            arr: pathArr,
+            link
+        },
+        {
+            vendorReplaced,
+            pathChecked,
+            pathCheckSucceeded
+        }
+    ];
+}
 const check = {
     vendor: (vendor, throwErr = false) => {
         if (runtimestorage.vendors[vendor]) {
@@ -20,10 +65,19 @@ const check = {
         }
     },
     path: (fpath, throwErr = false) => {
-        const [vendor, ipath] = fpath.split(':');
+        const split = fpath.split(':');
+        let vendor = '';
+        let ipath = '';
+        if (split.length === 1) {
+            vendor = 'sintasq';
+            ipath = split[0];
+        }
+        else {
+            vendor = split[0];
+            ipath = split.slice(1).join(':');
+        }
         const path = ipath.split('/');
         if (check.vendor(vendor, false)) {
-            // check if runtimestorage.vendors{path}.type exists
             let cdir = runtimestorage.vendors[vendor];
             for (const ndir of path) {
                 const next = cdir[ndir];
@@ -79,10 +133,8 @@ const register = {
     },
     component: (fpath, data) => {
         const [vendor, path] = fpath.split(':');
-        if (!runtimestorage.vendors[vendor]) {
-            throw new Error(`Vendor with name ${vendor} does not exist`);
-        }
         const parts = path.split('/');
+        check.vendor(vendor, true);
     },
 };
 const access = {
@@ -95,6 +147,7 @@ window.sintasq_initializer = () => {
     return {
         dev: {
             storage: runtimestorage,
+            parsepath: internal_parsepath
         },
         check,
         register,
