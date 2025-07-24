@@ -3,7 +3,8 @@ import type { StorageFile, Directory } from './types'
 let runtimestorage = {
     vendors: {} as { 
         [key: string]: Directory
-    }
+    },
+    root: null as HTMLObjectElement | null
 }
 
 const bakedstorage = {
@@ -173,7 +174,35 @@ declare global {
     }
 }
 
-window.sintasq_initializer = () => {
+window.sintasq_initializer = (root: HTMLObjectElement | string) => {
+    let realroot: HTMLObjectElement | null = null
+    let skiproot = false
+    if (root instanceof HTMLObjectElement) {
+        realroot = root;
+    } else {
+        switch (root.charAt(0)) {
+            case '.':
+                realroot = document.querySelector(root) as HTMLObjectElement
+                break
+            case '#':
+                realroot = document.getElementById(root.slice(1)) as HTMLObjectElement
+                break
+            case 't':
+                skiproot = true
+                console.warn('This message must only appear once, if it does twice, make sure you are not using window.sintasq_initializer with "t" as the root parameter, or importing sintasq twice')
+                break
+            default:
+                break
+        }
+        
+        if (!realroot && !skiproot) {
+            throw new Error('Could not initialize sintasq: No valid root (HTMLObjectElement) was specified')
+        }
+    }
+    if (!skiproot && realroot) {
+        realroot.innerHTML = `sintasq is getting ready... v${bakedstorage.version} ${bakedstorage.releasetype.toUpperCase()}`
+        runtimestorage.root = realroot
+    }
     return {
         dev: {
             storage: runtimestorage,
@@ -188,10 +217,11 @@ window.sintasq_initializer = () => {
 register.vendor('sintasq');
 register.vendor('pluginstore');
 function checkup() { // scoping it so it wont leak into anything
-    const st_test = window.sintasq_initializer();
+    const st_test = window.sintasq_initializer('t');
     if (st_test.dev || bakedstorage.releasetype.toLowerCase() != 'release') {
         console.warn('%c[sintasq] The current version of Sintasq is suspected to be a DEVELOPER BUILD.', 'font-size: 32px;')
         console.warn('%c[sintasq] IF THIS IS NOT A DEVELOPMENT ENVIRONMENT YOU SHOULD GET THE LATEST STABLE RELEASE.', 'font-size: 32px;')
+        console.warn(`[sintasq] checkup detected: devObj: ${st_test.dev ? true : false}; notRelease: ${bakedstorage.releasetype.toLowerCase() != 'release'}`)
     }
     console.info(`[sintasq] Running Sintasq ${bakedstorage.version}, ${bakedstorage.releasetype.toUpperCase()}`)
 }

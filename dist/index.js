@@ -1,10 +1,14 @@
 let runtimestorage = {
-    vendors: {}
+    vendors: {},
+    root: null
 };
 const bakedstorage = {
     version: 0.1,
     releasetype: 'alpha'
 };
+function internal_isDirectory(obj) {
+    return obj && typeof obj === 'object' && !('type' in obj);
+}
 function internal_parsepath(fpath, should_autocheck = false) {
     var _a;
     const split = fpath.split(':');
@@ -125,16 +129,22 @@ const register = {
         return true;
     },
     method: (fpath, data) => {
-        const [vendor, path] = fpath.split(':');
-        if (!runtimestorage.vendors[vendor]) {
-            throw new Error(`Vendor with name ${vendor} does not exist`);
+        const [vendor, pathObj] = internal_parsepath(fpath, true);
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`);
         }
-        const parts = path.split('/');
+        if (!internal_isDirectory(pathObj.link)) {
+            throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`);
+        }
     },
     component: (fpath, data) => {
-        const [vendor, path] = fpath.split(':');
-        const parts = path.split('/');
-        check.vendor(vendor, true);
+        const [vendor, pathObj] = internal_parsepath(fpath, true);
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`);
+        }
+        if (!internal_isDirectory(pathObj.link)) {
+            throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`);
+        }
     },
 };
 const access = {
@@ -143,7 +153,35 @@ const access = {
     component: (fpath) => {
     }
 };
-window.sintasq_initializer = () => {
+window.sintasq_initializer = (root) => {
+    let realroot = null;
+    let skiproot = false;
+    if (root instanceof HTMLObjectElement) {
+        realroot = root;
+    }
+    else {
+        switch (root.charAt(0)) {
+            case '.':
+                realroot = document.querySelector(root);
+                break;
+            case '#':
+                realroot = document.getElementById(root.slice(1));
+                break;
+            case 't':
+                skiproot = true;
+                console.warn('This message must only appear once, if it does twice, make sure you are not using window.sintasq_initializer with "t" as the root parameter, or importing sintasq twice');
+                break;
+            default:
+                break;
+        }
+        if (!realroot && !skiproot) {
+            throw new Error('Could not initialize sintasq: No valid root (HTMLObjectElement) was specified');
+        }
+    }
+    if (!skiproot && realroot) {
+        realroot.innerHTML = `sintasq is getting ready... v${bakedstorage.version} ${bakedstorage.releasetype.toUpperCase()}`;
+        runtimestorage.root = realroot;
+    }
     return {
         dev: {
             storage: runtimestorage,
@@ -157,10 +195,11 @@ window.sintasq_initializer = () => {
 register.vendor('sintasq');
 register.vendor('pluginstore');
 function checkup() {
-    const st_test = window.sintasq_initializer();
+    const st_test = window.sintasq_initializer('t');
     if (st_test.dev || bakedstorage.releasetype.toLowerCase() != 'release') {
         console.warn('%c[sintasq] The current version of Sintasq is suspected to be a DEVELOPER BUILD.', 'font-size: 32px;');
         console.warn('%c[sintasq] IF THIS IS NOT A DEVELOPMENT ENVIRONMENT YOU SHOULD GET THE LATEST STABLE RELEASE.', 'font-size: 32px;');
+        console.warn(`[sintasq] checkup detected: devObj: ${st_test.dev ? true : false}; notRelease: ${bakedstorage.releasetype.toLowerCase() != 'release'}`);
     }
     console.info(`[sintasq] Running Sintasq ${bakedstorage.version}, ${bakedstorage.releasetype.toUpperCase()}`);
 }
