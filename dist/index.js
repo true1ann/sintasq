@@ -136,6 +136,12 @@ const register = {
         if (!internal_isDirectory(pathObj.link)) {
             throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`);
         }
+        console.log(pathObj);
+        pathObj.link[data.name] = {
+            type: 'method',
+            data
+        };
+        console.log(pathObj);
     },
     component: (fpath, data) => {
         const [vendor, pathObj] = internal_parsepath(fpath, true);
@@ -145,12 +151,32 @@ const register = {
         if (!internal_isDirectory(pathObj.link)) {
             throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`);
         }
+        pathObj.link[data.name] = {
+            type: 'component',
+            data: data.componentdata
+        };
     },
 };
 const access = {
     method: (fpath, args) => {
+        const [vendor, pathObj] = internal_parsepath(fpath, true);
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`);
+        }
+        if (pathObj.link.type != 'method') {
+            throw new Error('The file does not seem to be a Method.');
+        }
+        return pathObj.link.data;
     },
     component: (fpath) => {
+        const [vendor, pathObj] = internal_parsepath(fpath, true);
+        if (!pathObj.link || pathObj.link == undefined) {
+            throw new Error(`Directory ${fpath} does not exist`);
+        }
+        if (pathObj.link.type != 'directory') {
+            throw new Error('The file does not seem to be a Method.');
+        }
+        return pathObj.link.data;
     }
 };
 window.sintasq_initializer = (root) => {
@@ -179,6 +205,7 @@ window.sintasq_initializer = (root) => {
         }
     }
     if (!skiproot && realroot) {
+        // TODO: Show a full-on compact loading indicator (with a customLib)
         realroot.innerHTML = `sintasq is getting ready... v${bakedstorage.version} ${bakedstorage.releasetype.toUpperCase()}`;
         runtimestorage.root = realroot;
     }
@@ -199,7 +226,7 @@ function checkup() {
     if (st_test.dev || bakedstorage.releasetype.toLowerCase() != 'release') {
         console.warn('%c[sintasq] The current version of Sintasq is suspected to be a DEVELOPER BUILD.', 'font-size: 32px;');
         console.warn('%c[sintasq] IF THIS IS NOT A DEVELOPMENT ENVIRONMENT YOU SHOULD GET THE LATEST STABLE RELEASE.', 'font-size: 32px;');
-        console.warn(`[sintasq] checkup detected: devObj: ${st_test.dev ? true : false}; notRelease: ${bakedstorage.releasetype.toLowerCase() != 'release'}`);
+        console.warn(`[sintasq] checkup detected: devObj: ${!!st_test.dev}; notRelease: ${bakedstorage.releasetype.toLowerCase() != 'release'}`);
     }
     console.info(`[sintasq] Running Sintasq ${bakedstorage.version}, ${bakedstorage.releasetype.toUpperCase()}`);
 }
