@@ -136,12 +136,10 @@ const register = {
         if (!internal_isDirectory(pathObj.link)) {
             throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`);
         }
-        console.log(pathObj);
         pathObj.link[data.name] = {
             type: 'method',
             data
         };
-        console.log(pathObj);
     },
     component: (fpath, data) => {
         const [vendor, pathObj] = internal_parsepath(fpath, true);

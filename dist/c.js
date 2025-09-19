@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sintasq.register.vendor('true1ann')
 
-    sintasq.register.directory('tc') // Test component container
+    sintasq.register.directory('true1ann:tc') // Test component container
     sintasq.register.method('true1ann:tc', { 
         name: 'api', 
         method: () => {
