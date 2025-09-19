@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sintasq = window.sintasq_initializer('#stroot')
 
+    window.st = sintasq
+
     sintasq.register.vendor('true1ann')
 
     sintasq.register.directory('true1ann:tc') // Test component container

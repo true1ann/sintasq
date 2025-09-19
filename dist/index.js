@@ -151,7 +151,7 @@ const register = {
         }
         pathObj.link[data.name] = {
             type: 'component',
-            data: data.componentdata
+            data
         };
     },
 };
@@ -171,8 +171,8 @@ const access = {
         if (!pathObj.link || pathObj.link == undefined) {
             throw new Error(`Directory ${fpath} does not exist`);
         }
-        if (pathObj.link.type != 'directory') {
-            throw new Error('The file does not seem to be a Method.');
+        if (pathObj.link.type != 'component') {
+            throw new Error('The file does not seem to be a Component.');
         }
         return pathObj.link.data;
     }

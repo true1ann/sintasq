@@ -145,17 +145,13 @@ const register = {
         if (!internal_isDirectory(pathObj.link)) {
             throw new Error(`Path ${fpath} does not seem to point to a directory. Set a StorageFile name using 'data[name]', data is argument 2 starting from 1`)
         }
-
-        console.log(pathObj)
         
         pathObj.link[data.name] = {
             type: 'method',
             data
         } as StorageFile
-
-        console.log(pathObj)
     },
-    component: (fpath: string, data: { name: string, componentdata: componentDataFile; }) => { // <st-c id="vendor:path/component" arg1="works the same as in html">really</st-c>
+    component: (fpath: string, data: componentDataFile) => { // <st-c id="vendor:path/component" arg1="works the same as in html">really</st-c>
         const [vendor, pathObj] = internal_parsepath(fpath, true)
         if (!pathObj.link || pathObj.link == undefined) {
             throw new Error(`Directory ${fpath} does not exist`)
@@ -166,7 +162,7 @@ const register = {
 
         pathObj.link[data.name] = {
             type: 'component',
-            data: data.componentdata
+            data
         } as StorageFile
     },
 }
@@ -190,8 +186,8 @@ const access = {
             throw new Error(`Directory ${fpath} does not exist`)
         }
 
-        if (pathObj.link.type != 'directory') {
-            throw new Error('The file does not seem to be a Method.')
+        if (pathObj.link.type != 'component') {
+            throw new Error('The file does not seem to be a Component.')
         }
 
         return pathObj.link.data
